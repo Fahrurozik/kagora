@@ -1,0 +1,31 @@
+node_modules/
+out/
+dist/
+release/
+build/
+kagora-data/
+*.log
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Electron builder outputs
+*.exe
+*.dmg
+*.AppImage
+*.snap
+*.deb
+*.rpm
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local overrides
+*.local
