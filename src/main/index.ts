@@ -104,6 +104,15 @@ function setupIPC() {
 
   // Chat
   ipcMain.handle('chat:send', (_e, from: string, to: string, text: string) => {
+    // Validate DM target exists
+    if (to !== 'group') {
+      const agents = chatStore.getAgents()
+      if (!agents.some(a => a.id === to)) {
+        const validIds = agents.map(a => a.id)
+        return { error: `Unknown agent "${to}". Valid IDs: ${validIds.join(', ')}` }
+      }
+    }
+
     const msg = chatStore.addMessage(from, to, text)
     mainWindow?.webContents.send('chat:message', msg)
 
@@ -264,6 +273,18 @@ function startChatAPI() {
         try {
           const { from, to, text } = JSON.parse(body)
           const dest = to || 'group'
+
+          // Validate DM target exists
+          if (dest !== 'group') {
+            const agents = chatStore.getAgents()
+            if (!agents.some(a => a.id === dest)) {
+              const validIds = agents.map(a => a.id)
+              res.writeHead(400, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ error: `Unknown agent "${dest}". Valid IDs: ${validIds.join(', ')}` }))
+              return
+            }
+          }
+
           const msg = chatStore.addMessage(from, dest, text)
           mainWindow?.webContents.send('chat:message', msg)
 

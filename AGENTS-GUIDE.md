@@ -59,6 +59,16 @@ AI 在終端中會收到三種訊息，格式不同：
 
 ## 3. 聊天 API
 
+> **重要：發送私訊前，務必先用 `GET /api/agents` 取得正確的 Agent ID 清單。**
+> Agent ID 是建立時設定的（如 `mio`、`kj`），不是顯示名稱（如「澪」、「KJ」）。
+> 若 `to` 指定的 ID 不存在，API 會回傳 400 錯誤並列出所有有效 ID。
+
+### 查詢 Agent 清單（私訊前先查）
+```bash
+curl -s http://127.0.0.1:7777/api/agents
+# 回傳: [{"id":"mio","name":"澪",...}, {"id":"kj","name":"KJ",...}, ...]
+```
+
 ### 發送群組訊息
 ```bash
 curl -s -X POST http://127.0.0.1:7777/api/chat \
@@ -68,6 +78,7 @@ curl -s -X POST http://127.0.0.1:7777/api/chat \
 
 ### 發送私訊
 ```bash
+# TARGET_ID 必須是 GET /api/agents 回傳的某個 agent.id
 curl -s -X POST http://127.0.0.1:7777/api/chat \
   -H "Content-Type: application/json" \
   -d '{"from":"YOUR_ID","to":"TARGET_ID","text":"訊息內容"}'
