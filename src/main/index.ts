@@ -144,6 +144,14 @@ function setupIPC() {
     return true
   })
 
+  ipcMain.handle('agent:update', (_e, id: string, partial: any) => {
+    const safe: Record<string, unknown> = {}
+    if (typeof partial?.startupCommand === 'string') safe.startupCommand = partial.startupCommand.slice(0, 4096)
+    if (partial?.startupCommand === null) safe.startupCommand = undefined
+    chatStore.updateAgent(id, safe)
+    return chatStore.getAgents()
+  })
+
   ipcMain.handle('agent:remove', (_e, id: string) => {
     terminalManager.destroy(id)
     chatStore.removeAgent(id)
@@ -182,6 +190,7 @@ function setupIPC() {
     if (auto.method !== 'chat' && auto.method !== 'inject') return null
     return chatStore.addAutomation({
       name: auto.name.slice(0, 128),
+      description: typeof auto.description === 'string' ? auto.description.slice(0, 512) : undefined,
       script: auto.script.slice(0, 4096),
       target: auto.target,
       schedule: auto.schedule.slice(0, 64),

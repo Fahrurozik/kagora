@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 interface Automation {
   id: string
   name: string
+  description?: string
   script: string
   target: string
   schedule: string
@@ -40,7 +41,7 @@ export default function AutomationsPanel() {
         <span>Automations</span>
         <button className="auto-add-btn" onClick={() => setShowAdd(true)}>+ Add</button>
       </div>
-      <div className="settings-body" style={{ maxWidth: '100%' }}>
+      <div className="settings-body" style={{ maxWidth: '100%', overflowY: 'auto' }}>
         {automations.length === 0 && !showAdd && (
           <div style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: 40 }}>
             No automations configured yet.
@@ -79,6 +80,16 @@ export default function AutomationsPanel() {
                   </button>
                 </div>
               </div>
+              {auto.description && (
+                <div style={{
+                  fontSize: 12, color: 'var(--text-secondary)',
+                  marginBottom: 8, lineHeight: 1.5,
+                  padding: '6px 10px', borderRadius: 6,
+                  background: 'var(--bg-tertiary)',
+                }}>
+                  {auto.description}
+                </div>
+              )}
               <div className="auto-card-body">
                 <div className="auto-field">
                   <span className="auto-label">Script</span>
@@ -112,6 +123,7 @@ function AddForm({ onAdd, onCancel }: {
   onCancel: () => void
 }) {
   const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
   const [script, setScript] = useState('')
   const [target, setTarget] = useState('')
   const [schedule, setSchedule] = useState('')
@@ -123,9 +135,15 @@ function AddForm({ onAdd, onCancel }: {
     <div className="auto-add-form">
       <h4>New Automation</h4>
       <input placeholder="Name (e.g. Heartbeat Check)" value={name} onChange={e => setName(e.target.value)} autoFocus />
+      <input
+        placeholder="Description / Notes"
+        value={description}
+        onChange={e => setDescription(e.target.value)}
+        style={{ color: 'var(--text-secondary)' }}
+      />
       <input placeholder="Script path (e.g. ~/scripts/heartbeat.py)" value={script} onChange={e => setScript(e.target.value)} />
       <input placeholder="Target agent ID (e.g. shrimp)" value={target} onChange={e => setTarget(e.target.value)} />
-      <input placeholder="Schedule (e.g. Every 3 hours)" value={schedule} onChange={e => setSchedule(e.target.value)} />
+      <input placeholder="Schedule (e.g. interval:180, daily:08:00)" value={schedule} onChange={e => setSchedule(e.target.value)} />
       <div className="auto-method-row">
         <label>
           <input type="radio" name="method" checked={method === 'inject'} onChange={() => setMethod('inject')} />
@@ -138,7 +156,14 @@ function AddForm({ onAdd, onCancel }: {
       </div>
       <div className="dialog-actions">
         <button onClick={onCancel}>Cancel</button>
-        <button className="primary" disabled={!canSubmit} onClick={() => onAdd({ name, script, target, schedule, method, enabled: true })}>
+        <button
+          className="primary"
+          disabled={!canSubmit}
+          onClick={() => onAdd({
+            name, script, target, schedule, method, enabled: true,
+            description: description.trim() || undefined
+          })}
+        >
           Add
         </button>
       </div>

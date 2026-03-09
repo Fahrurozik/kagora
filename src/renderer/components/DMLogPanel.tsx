@@ -27,7 +27,7 @@ function getConversationKey(msg: ChatMessage): string {
 export default function DMLogPanel() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [filter, setFilter] = useState<string>('all')
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const messagesRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     window.kagora.getChatHistory('dm-log').then(setMessages)
@@ -39,9 +39,13 @@ export default function DMLogPanel() {
     })
   }, [])
 
+  // Scroll to bottom on new messages
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    const el = messagesRef.current
+    if (el) {
+      el.scrollTop = el.scrollHeight
+    }
+  }, [messages, filter])
 
   const conversations = [...new Set(messages.map(getConversationKey))].sort()
 
@@ -65,7 +69,7 @@ export default function DMLogPanel() {
         </select>
       </div>
 
-      <div className="chat-messages">
+      <div className="chat-messages" ref={messagesRef}>
         {filtered.length === 0 && (
           <div style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: 40 }}>
             No private messages yet
@@ -95,7 +99,6 @@ export default function DMLogPanel() {
             </div>
           </div>
         ))}
-        <div ref={bottomRef} />
       </div>
     </div>
   )

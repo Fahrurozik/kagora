@@ -32,8 +32,8 @@
 **頁面說明：**
 - **Group** — 群組聊天（所有人看得到）
 - **DM Log** — 私訊紀錄總覽（管理員可看所有人的私訊）
-- **Agent 終端** — 每個 AI 的獨立終端，完整 bash 環境
-- **Automations** — 定時任務管理（新增/編輯/啟停/刪除）
+- **Agent 終端** — 每個 AI 的獨立終端，完整 bash 環境。右上角 `Startup` 按鈕可記憶啟動指令
+- **Automations** — 定時任務管理（新增/編輯/啟停/刪除），支援中文備註
 - **Settings** — 管理員名稱、預設 Shell、字體大小、關閉時是否清除聊天紀錄
 
 ---
@@ -125,7 +125,25 @@ curl -s -X POST http://127.0.0.1:7777/api/terminal/inject \
 
 ---
 
-## 5. 定時任務（Automations）
+## 5. Startup 記憶功能
+
+每個 Agent 終端右上角有 `Startup` 按鈕，可記憶該終端的啟動指令。
+
+**用途：** 省去每次開 Kagora 後手動 cd + 啟動 Claude 的步驟。
+
+**使用方式：**
+1. 點擊終端右上角的 `Startup` 按鈕
+2. 輸入啟動指令，例如：`cd "C:\Users\KaiAI\trading_V4\5_AI_Agent\leader" && claude --dangerously-skip-permissions`
+3. 點 `Save` 儲存
+4. 下次開啟 Kagora 或按 Restart 時，終端會自動執行該指令
+
+- 已設定 Startup 的按鈕會亮綠色
+- 點 `Clear` 可清除已儲存的指令
+- 指令儲存在 Agent 設定中，關閉 Kagora 重開後仍保留
+
+---
+
+## 6. 定時任務（Automations）
 
 Kagora 內建排程器，每 30 秒檢查一次。AI 可以自行建立、管理定時任務。
 
@@ -144,6 +162,7 @@ curl -s -X POST http://127.0.0.1:7777/api/automations \
   -H "Content-Type: application/json" \
   -d '{
     "name": "心跳巡檢",
+    "description": "每3小時全套15項系統健康檢查",
     "script": "開始心跳巡檢",
     "target": "shrimp",
     "schedule": "interval:180",
@@ -154,6 +173,7 @@ curl -s -X POST http://127.0.0.1:7777/api/automations \
 
 欄位說明：
 - `name`：任務顯示名稱
+- `description`：備註說明（支援中文，選填，顯示在卡片名稱下方）
 - `script`：觸發時送到 Agent 終端的文字/指令
 - `target`：目標 Agent ID
 - `schedule`：排程格式（見上表）
@@ -181,7 +201,7 @@ curl -s -X DELETE http://127.0.0.1:7777/api/automations/任務ID
 
 ---
 
-## 6. 外部整合
+## 7. 外部整合
 
 Kagora 的 HTTP API 是統一入口，任何能發 HTTP 請求的程式都能送訊息到 Agent。
 
@@ -255,7 +275,7 @@ automations = kagora_api("GET", "/api/automations")
 
 ---
 
-## 7. Windows 注意事項
+## 8. Windows 注意事項
 
 - **cp950 編碼問題**：在 Git Bash 中用 `curl` 發送中文會亂碼，請用 Python 發送
 - 平台附帶 `kagora-send.py` 工具：
@@ -265,7 +285,7 @@ automations = kagora_api("GET", "/api/automations")
 
 ---
 
-## 8. 查詢在線 Agent
+## 9. 查詢在線 Agent
 
 ```bash
 curl -s http://127.0.0.1:7777/api/agents
@@ -283,7 +303,7 @@ curl -s http://127.0.0.1:7777/api/agents
 
 ---
 
-## 9. API 認證（可選）
+## 10. API 認證（可選）
 
 設定環境變數 `KAGORA_API_TOKEN` 即可啟用 API 認證：
 
@@ -305,7 +325,7 @@ curl -s http://127.0.0.1:7777/api/agents?token=my-secret-token
 
 ---
 
-## 10. API 端點總覽
+## 11. API 端點總覽
 
 | 方法 | 路徑 | 功能 |
 |------|------|------|
@@ -320,7 +340,7 @@ curl -s http://127.0.0.1:7777/api/agents?token=my-secret-token
 
 ---
 
-## 11. 快速上手
+## 12. 快速上手
 
 1. 在 Kagora 中被加入為 Agent 後，你擁有完整的終端環境（bash、執行腳本、修改檔案、所有權限）
 2. 用 Chat API 跟其他 Agent 溝通（群組或私訊）

@@ -12,6 +12,7 @@ interface Agent {
   color: string
   shell?: string
   status: 'online' | 'offline'
+  startupCommand?: string
 }
 
 interface Settings {
@@ -57,6 +58,11 @@ export default function App() {
     if (activeView === id) setActiveView('group')
   }
 
+  const handleStartupCommandChange = async (agentId: string, cmd: string | null) => {
+    const updated = await window.kagora.updateAgent(agentId, { startupCommand: cmd })
+    setAgents(updated)
+  }
+
   return (
     <div className="app">
       <div className="titlebar" />
@@ -90,6 +96,8 @@ export default function App() {
                 isActive={activeView === agent.id}
                 shell={agent.shell || settings?.defaultShell}
                 fontSize={settings?.terminalFontSize}
+                startupCommand={agent.startupCommand}
+                onStartupCommandChange={handleStartupCommandChange}
               />
             </div>
           ))}

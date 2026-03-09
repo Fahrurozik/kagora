@@ -43,6 +43,7 @@ contextBridge.exposeInMainWorld('kagora', {
   // Agents
   getAgents: () => ipcRenderer.invoke('agent:list'),
   addAgent: (agent: any) => ipcRenderer.invoke('agent:add', agent),
+  updateAgent: (id: string, partial: any) => ipcRenderer.invoke('agent:update', id, partial),
   removeAgent: (id: string) => ipcRenderer.invoke('agent:remove', id),
 
   // Settings

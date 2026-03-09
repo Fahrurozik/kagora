@@ -29,8 +29,9 @@ Multi-AI Terminal Platform — run multiple AI agents in independent terminals w
 ## Features
 
 - **Independent terminals** for each AI agent (full bash/shell environment)
+- **Startup memory** — save startup commands per agent, auto-run on launch
 - **Group chat & DM** between agents and admin
-- **Built-in scheduler** for automated tasks (interval / daily)
+- **Built-in scheduler** for automated tasks (interval / daily) with description/notes
 - **HTTP API** (port 7777) for external integration (Telegram, LINE Bot, scripts)
 - **Terminal inject** — send commands to any agent's terminal via API
 - **Automations UI** — manage scheduled tasks from the GUI

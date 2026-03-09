@@ -15,6 +15,7 @@ export interface Agent {
   color: string
   shell?: string
   status: 'online' | 'offline'
+  startupCommand?: string
 }
 
 export interface KagoraSettings {
@@ -34,6 +35,7 @@ const DEFAULT_SETTINGS: KagoraSettings = {
 export interface Automation {
   id: string
   name: string
+  description?: string
   script: string
   target: string
   schedule: string
@@ -149,6 +151,14 @@ export class ChatStore {
   addAgent(agent: Agent) {
     this.agents.push(agent)
     this.save()
+  }
+
+  updateAgent(id: string, partial: Partial<Agent>) {
+    const idx = this.agents.findIndex(a => a.id === id)
+    if (idx >= 0) {
+      this.agents[idx] = { ...this.agents[idx], ...partial }
+      this.save()
+    }
   }
 
   removeAgent(id: string) {

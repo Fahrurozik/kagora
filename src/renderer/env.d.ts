@@ -12,6 +12,7 @@ interface KagoraAPI {
   getChatHistory: (channel: string) => Promise<any[]>
   getAgents: () => Promise<any[]>
   addAgent: (agent: any) => Promise<boolean>
+  updateAgent: (id: string, partial: any) => Promise<any[]>
   removeAgent: (id: string) => Promise<boolean>
   getSettings: () => Promise<any>
   updateSettings: (partial: any) => Promise<any>

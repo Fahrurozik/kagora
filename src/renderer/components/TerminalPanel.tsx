@@ -8,6 +8,8 @@ interface TerminalPanelProps {
   isActive: boolean
   shell?: string
   fontSize?: number
+  startupCommand?: string
+  onStartupCommandChange?: (agentId: string, cmd: string | null) => void
 }
 
 const THEME = {
@@ -34,13 +36,16 @@ const THEME = {
   brightWhite: '#f0f6fc',
 }
 
-export default function TerminalPanel({ agentId, isActive, shell, fontSize = 14 }: TerminalPanelProps) {
+export default function TerminalPanel({ agentId, isActive, shell, fontSize = 14, startupCommand, onStartupCommandChange }: TerminalPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const terminalRef = useRef<Terminal | null>(null)
   const fitAddonRef = useRef<FitAddon | null>(null)
   const [exited, setExited] = useState(false)
   const [restartCount, setRestartCount] = useState(0)
   const [copied, setCopied] = useState(false)
+  const [showSaveDialog, setShowSaveDialog] = useState(false)
+  const [editCmd, setEditCmd] = useState('')
+  const startupSentRef = useRef(false)
 
   // Create terminal + PTY
   useEffect(() => {
@@ -111,7 +116,16 @@ export default function TerminalPanel({ agentId, isActive, shell, fontSize = 14 
 
     // Receive PTY output
     const removeDataListener = window.kagora.onTerminalData((id, data) => {
-      if (id === agentId) terminal.write(data)
+      if (id === agentId) {
+        terminal.write(data)
+        // Auto-run startup command after first prompt appears
+        if (!startupSentRef.current && startupCommand) {
+          startupSentRef.current = true
+          setTimeout(() => {
+            window.kagora.sendTerminalInput(agentId, startupCommand + '\r')
+          }, 500)
+        }
+      }
     })
 
     // Receive PTY exit
@@ -160,6 +174,11 @@ export default function TerminalPanel({ agentId, isActive, shell, fontSize = 14 
     }
   }, [agentId, restartCount])
 
+  // Reset startupSent on restart
+  useEffect(() => {
+    startupSentRef.current = false
+  }, [restartCount])
+
   // Auto-focus + re-fit when tab becomes active
   useEffect(() => {
     if (isActive) {
@@ -186,6 +205,31 @@ export default function TerminalPanel({ agentId, isActive, shell, fontSize = 14 
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const handleOpenSaveDialog = () => {
+    setEditCmd(startupCommand || '')
+    setShowSaveDialog(true)
+  }
+
+  const handleSaveStartup = () => {
+    const cmd = editCmd.trim()
+    onStartupCommandChange?.(agentId, cmd || null)
+    setShowSaveDialog(false)
+  }
+
+  const handleClearStartup = () => {
+    onStartupCommandChange?.(agentId, null)
+    setShowSaveDialog(false)
+  }
+
+  const toolbarBtnStyle = (active?: boolean) => ({
+    padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600 as const,
+    background: active ? 'rgba(46, 160, 67, 0.3)' : 'rgba(33, 38, 45, 0.85)',
+    border: '1px solid ' + (active ? '#3fb950' : '#30363d'),
+    color: active ? '#3fb950' : '#8b949e',
+    cursor: 'pointer' as const, transition: 'all 0.2s',
+    backdropFilter: 'blur(4px)',
+  })
+
   return (
     <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
       {/* Toolbar */}
@@ -194,16 +238,16 @@ export default function TerminalPanel({ agentId, isActive, shell, fontSize = 14 
         display: 'flex', gap: 6,
       }}>
         <button
+          onClick={handleOpenSaveDialog}
+          title={startupCommand ? `Startup: ${startupCommand}` : 'Set startup command'}
+          style={toolbarBtnStyle(!!startupCommand)}
+        >
+          {startupCommand ? 'Startup' : 'Startup'}
+        </button>
+        <button
           onClick={handleCopyGuide}
           title="Copy command to read AGENTS-GUIDE.md"
-          style={{
-            padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-            background: copied ? 'rgba(46, 160, 67, 0.3)' : 'rgba(33, 38, 45, 0.85)',
-            border: '1px solid ' + (copied ? '#3fb950' : '#30363d'),
-            color: copied ? '#3fb950' : '#8b949e',
-            cursor: 'pointer', transition: 'all 0.2s',
-            backdropFilter: 'blur(4px)',
-          }}
+          style={toolbarBtnStyle(copied)}
         >
           {copied ? 'Copied!' : 'Guide'}
         </button>
@@ -232,6 +276,85 @@ export default function TerminalPanel({ agentId, isActive, shell, fontSize = 14 
           >
             Restart
           </button>
+        </div>
+      )}
+
+      {/* Save Startup Command Dialog */}
+      {showSaveDialog && (
+        <div
+          style={{
+            position: 'absolute', inset: 0, zIndex: 20,
+            background: 'rgba(0,0,0,0.5)', display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+          }}
+          onClick={() => setShowSaveDialog(false)}
+        >
+          <div
+            style={{
+              background: '#161b22', border: '1px solid #30363d',
+              borderRadius: 12, padding: 24, width: 480,
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 style={{ marginBottom: 8, fontSize: 15 }}>Startup Command</h3>
+            <p style={{ fontSize: 12, color: '#8b949e', marginBottom: 12 }}>
+              Terminal will auto-run this command on launch.
+            </p>
+            <textarea
+              value={editCmd}
+              onChange={e => setEditCmd(e.target.value)}
+              placeholder='e.g. cd "C:\project" && claude --dangerously-skip-permissions'
+              autoFocus
+              rows={3}
+              style={{
+                width: '100%', padding: '10px 12px',
+                background: '#0d1117', border: '1px solid #30363d',
+                borderRadius: 8, color: '#e6edf3', fontSize: 13,
+                fontFamily: "'Cascadia Mono', Consolas, monospace",
+                outline: 'none', resize: 'vertical', lineHeight: 1.5,
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSaveStartup()
+                }
+              }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
+              <button
+                onClick={handleClearStartup}
+                style={{
+                  padding: '6px 14px', borderRadius: 6,
+                  background: 'transparent', border: '1px solid #30363d',
+                  color: '#f85149', cursor: 'pointer', fontSize: 12,
+                }}
+              >
+                Clear
+              </button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => setShowSaveDialog(false)}
+                  style={{
+                    padding: '6px 14px', borderRadius: 6,
+                    background: '#21262d', border: '1px solid #30363d',
+                    color: '#e6edf3', cursor: 'pointer', fontSize: 12,
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveStartup}
+                  style={{
+                    padding: '6px 14px', borderRadius: 6,
+                    background: '#238636', border: 'none',
+                    color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600,
+                  }}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
