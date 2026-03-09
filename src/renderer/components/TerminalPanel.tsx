@@ -48,9 +48,13 @@ export default function TerminalPanel({ agentId, isActive, shell, fontSize = 14,
   const [showSaveDialog, setShowSaveDialog] = useState(false)
   const [editCmd, setEditCmd] = useState('')
   const startupSentRef = useRef(false)
+  const lastTypingNotify = useRef(0)
 
   // Create terminal + PTY
   useEffect(() => {
+    // Create PTY immediately (before xterm UI, so it works even when hidden)
+    window.kagora.createTerminal(agentId, shell, adminMode)
+
     const el = containerRef.current
     if (!el) return
 
@@ -71,9 +75,16 @@ export default function TerminalPanel({ agentId, isActive, shell, fontSize = 14,
     const handlePaste = (e: Event) => { e.preventDefault(); e.stopPropagation() }
     el.addEventListener('paste', handlePaste, true)
 
-    // Clipboard handling
+    // Clipboard handling + typing notification
     terminal.attachCustomKeyEventHandler((ev) => {
       if (ev.type !== 'keydown') return true
+
+      // Notify main process of real keyboard activity (throttled 500ms)
+      const now = Date.now()
+      if (now - lastTypingNotify.current > 500) {
+        lastTypingNotify.current = now
+        window.kagora.notifyTyping(agentId)
+      }
 
       // Ctrl+Enter: insert newline (multi-line input, replaces Alt+Enter)
       if (ev.ctrlKey && ev.key === 'Enter') {
@@ -118,9 +129,6 @@ export default function TerminalPanel({ agentId, isActive, shell, fontSize = 14,
       })
     }
     el.addEventListener('contextmenu', handleContextMenu)
-
-    // Create PTY in main process
-    window.kagora.createTerminal(agentId, shell, adminMode)
 
     // Receive PTY output
     const removeDataListener = window.kagora.onTerminalData((id, data) => {

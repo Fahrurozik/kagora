@@ -6,6 +6,8 @@ contextBridge.exposeInMainWorld('kagora', {
     ipcRenderer.invoke('terminal:create', agentId, shell, adminMode),
   sendTerminalInput: (agentId: string, data: string) =>
     ipcRenderer.send('terminal:input', agentId, data),
+  notifyTyping: (agentId: string) =>
+    ipcRenderer.send('terminal:typing', agentId),
   onTerminalData: (callback: (agentId: string, data: string) => void) => {
     const handler = (_e: Electron.IpcRendererEvent, agentId: string, data: string) =>
       callback(agentId, data)

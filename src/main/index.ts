@@ -89,6 +89,10 @@ function setupIPC() {
     terminalManager.write(agentId, data)
   })
 
+  ipcMain.on('terminal:typing', (_e, agentId: string) => {
+    terminalManager.notifyUserTyping(agentId)
+  })
+
   ipcMain.on('terminal:resize', (_e, agentId: string, cols: number, rows: number) => {
     terminalManager.resize(agentId, cols, rows)
   })

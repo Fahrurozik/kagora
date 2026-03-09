@@ -144,8 +144,12 @@ export class TerminalManager {
   }
 
   write(agentId: string, data: string) {
-    this.lastInputTime.set(agentId, Date.now())
     this.terminals.get(agentId)?.process.write(data)
+  }
+
+  /** Called by renderer on real keyboard events only (not xterm auto-responses) */
+  notifyUserTyping(agentId: string) {
+    this.lastInputTime.set(agentId, Date.now())
   }
 
   /** Serialized inject: queues all messages per terminal, drains one at a time with gaps */
